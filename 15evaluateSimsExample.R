@@ -97,6 +97,7 @@ predDatDep$p3ll <- p3ll
 
 # best model
 #pdf("../Accuracy.pdf", width = 7,height=4)
+#png("../Accuracy.png", res = 300, width = 7,height=4, units="in")
 ggplot(datAgg, aes(numtDep, contained, fill=factor(GS))) +
   geom_line(data=predDatDep, aes(x=numtDep, y=p3ll, col=factor(GS))) +
   geom_point(position=position_jitter(w=0.05, h=0.01),
