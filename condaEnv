@@ -1,0 +1,1 @@
+#conda create -n vagrantSim -c bioconda -c conda-forge bwa-mem2 "r-base>=4" r-matrix wgsim samtools freebayes scikit-allel zarr
