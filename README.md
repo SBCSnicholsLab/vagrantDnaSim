@@ -15,3 +15,13 @@ Pipeline to simulate vagrant DNA insertion in to nuclear genomes.
   * Cylces through 15,000,000 years, checking each year if a substitution happens in the extranuclear DNA and is an insertion happens into the nuclear genome. 
   * Genomes are written out. The nuclear one is made up randomly while on the fly, filling in vagrant inserts that were recorded during the 15M years.
 2. Sequencing reads are simulated using [wgsim](https://github.com/lh3/wgsim)
+3. Reads are mapped using [bwa-mem2](https://github.com/bwa-mem2/bwa-mem2)
+4. BAM files are sorted and indexed with samtools. Variants are called using freebayes.
+5. VCF is converted to allele count tables using [scikit-allel](https://scikit-allel.readthedocs.io/en/stable/) in Python
+6. Numbers of mapped and total basairs in the data are recorded
+7. Allele count tables are converted into the input data format required for fitting. 
+8. The fit is run.
+9. Results are stored in `[outname].log`
+
+## Summary of results
+![GLM](Accuracy.pdf)
