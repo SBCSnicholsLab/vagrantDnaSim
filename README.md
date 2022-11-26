@@ -24,4 +24,4 @@ Pipeline to simulate vagrant DNA insertion in to nuclear genomes.
 9. Results are stored in `[outname].log`
 
 ## Summary of results
-![GLM](Accuracy.pdf)
+![GLM](Accuracy.png)
