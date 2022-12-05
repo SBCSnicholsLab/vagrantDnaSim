@@ -51,11 +51,11 @@ datAgg <- aggregate(contained ~ prop+ GS + numtDep, data=datWithMissing, functio
 library(ggplot2)
 depPlot <- ggplot(datAgg, aes(numtDep, contained, fill=factor(GS))) +
   geom_point(position=position_jitter(w=0.1, h=0.01),
-             col="white", shape=21, size=2) 
+             col="white", shape=21, size=2)
 depPlot
 propPlot <- ggplot(datAgg, aes(prop, contained, fill=factor(GS))) +
   geom_point(position=position_jitter(w=0.00003, h=0.01),
-             col="white", shape=21, size=2) 
+             col="white", shape=21, size=2)
 propPlot
 #modelling
 
@@ -71,9 +71,10 @@ glm03l <- glm(contained ~ log(GS) +  numtDep, weights=rep(10, nrow(datAgg)),
 glm03ll <- glm(contained ~ log(GS) +  log(numtDep), weights=rep(10, nrow(datAgg)),
                data=datAgg,
                family=binomial)
-par(mfrow=c(2,2))
-# fit look alright
 
+
+# fits look alright
+par(mfrow=c(2,2))
 plot(glm03)
 plot(glm03l)
 plot(glm03ll)
@@ -109,3 +110,89 @@ ggplot(datAgg, aes(numtDep, contained, fill=factor(GS))) +
   scale_fill_manual(name="Genome size (Mbp)",aesthetics=c("colour", "fill"),labels=c(250, 500, 1000), values=c(2,3,4))
 #dev.off()
 
+
+
+
+coef(glm03ll)
+# acc = 3.6 - 1.5*log(gsMbp) + 6.8*log(dep)
+
+#0.95 = c0 + c1*log(gsMbp) + c2*log(dep)
+
+# -c1*log(gsMbp) = c0-0.95 + c2*log(dep)
+#
+# -c1*log(gsMbp) = c0-0.95 + c2*log(gsMbp * prop *ndep / 0.016)
+# -c1*log(gsMbp) = c0-0.95 + c2*(log(gsMbp)+log(ndep)+log(prop)-log(0.016))
+# -c1*log(gsMbp) = c0-0.95 + c2*log(gsMbp)+c2*log(prop)+c2*log(ndep)-c2*log(0.016)
+# -c1*log(gsMbp)- c2*log(gsMbp) = c0-0.95 +c2*log(prop)+c2*log(ndep)-c2*log(0.016)
+# -(c1+c2) * log(gsMbp) =  c0-0.95 +c2*log(prop)+c2*log(ndep)-c2*log(0.016)
+# log(gsMbp) =  (c0-0.95 +c2*log(prop)+c2*log(ndep)-c2*log(0.016))/-(c1+c2)
+
+# dep = gs * prop * ndep /extrGS
+
+gs <- function(prop, c0, c1, c2, ndep){
+  exp((c0-0.95 +c2*log(prop)+c2*log(ndep)-c2*log(0.016))/-(c1+c2)) * 1000000
+}
+curve(gs(x, coef(glm03ll)[1], coef(glm03ll)[2], coef(glm03ll)[3], ndep=0.1), 0, 0.01)
+par(mfrow=c(1,1))
+
+#pdf("../DepReq.pdf", height=5.5, width=7)
+#png("../DepReq.png", height=5.5, width=7, units = "in", res=150)
+curve(gs(x, coef(glm03ll)[1], coef(glm03ll)[2], coef(glm03ll)[3], ndep=0.1),
+      1e-5,
+      0.001,
+      log="xy",
+      xlab="Nuclear proportion of vagrant DNA",
+      ylab="Genome Size",
+      main="Sequencing depth required",
+      lwd=2,
+      ylim=c(100000000, 20000000000),
+      xaxt = 'n',
+      yaxt = 'n')
+xat <- c(0.00001, 0.00002, 0.00005, 0.0001,0.0002, 0.0005, 0.001)
+axis(1, at = xat,
+     labels = expression("10"^-5, "2×10"^-5, "5×10"^-5, "10"^-4, "2×10"^-4, "5×10"^-4, "10"^-3)
+)
+yat <- c(1e8, 2e8, 5e8, 1e9, 2e9, 5e9, 1e10, 2e10)
+axis(2,
+     at = yat,
+     labels = c("100 M", "200 M", "500 M", "1 G", "2 G", "5 G", "10 G", "20 G"),
+     las=2
+     )
+curve(gs(x, coef(glm03ll)[1], coef(glm03ll)[2], coef(glm03ll)[3], ndep=0.2),
+      1e-5,
+      0.001,
+      lty=2,
+      lwd=2,
+      add=T)
+
+curve(gs(x, coef(glm03ll)[1], coef(glm03ll)[2], coef(glm03ll)[3], ndep=0.5),
+      1e-5,
+      0.01,
+      lty=3,
+      lwd=2,
+      add=T)
+
+curve(gs(x, coef(glm03ll)[1], coef(glm03ll)[2], coef(glm03ll)[3], ndep=1),
+      1e-5,
+      0.01,
+      lty=4,
+      lwd=2,
+      add=T)
+
+abline(v=xat,
+       col="grey",
+       lty=3)
+abline(h=yat,
+       col="grey",
+       lty=3)
+
+legend("bottomleft",
+       lty=1:4,
+       lwd=2,
+       legend=c("0.1x", "0.2x", "0.5x", "1.0x"),
+       title = "Sequencing depth"
+       )
+points(y=c(1, 3.5, 17)*1e9,
+       x=c(0.000081, 0.00014, 0.00056),
+       pch=c("P", "H", "G"))
+#dev.off()
