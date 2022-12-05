@@ -56,3 +56,5 @@ The associated coefficient table is:
 log(GSinMbp)  -1.5034     0.4217  -3.565 0.000364 ***
 log(numtDep)   6.7679     0.9332   7.252 4.11e-13 ***
 ```
+## Depth required
+![Prediction](DepReq.png)
